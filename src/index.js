@@ -158,6 +158,10 @@ export default class CanvasDraw extends PureComponent {
     return this.coordSystem.setView(view);
   };
 
+  toDataUrl = (mimeType) => {
+    return this.canvas.drawing && this.canvas.drawing.toDataURL(mimeType);
+  };
+
   getSaveData = () => {
     // Construct and return the stringified saveData object
     return JSON.stringify({
