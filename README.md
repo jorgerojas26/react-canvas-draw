@@ -3,6 +3,11 @@
 </div>
 
 > A simple yet powerful canvas-drawing component for React ([Demo](https://embiem.github.io/react-canvas-draw/))
+> This a fork of the forked version of ([markbiddlecom](https://github.com/markbiddlecom/react-canvas-draw)). I did because the PR on the main version never got merged sadly,
+but i needed the support for zooming and paning so bad, so i decided to fork the fork and just added methods for zooming that can be called from a external events.
+
+All the credits are for ([embiem](https://github.com/embiem)) for the main package and ([markbiddlecom](https://github.com/markbiddlecom)) for the forked version
+with pan and zoom support. Thank you for this awesome package.
 
 [![Travis][build-badge]][build] [![Coveralls][coveralls-badge]][coveralls] [![npm package][npm-badge]][npm] [![downloads][downloads-badge]][npmtrends] [![MIT License][license-badge]][license]
 
