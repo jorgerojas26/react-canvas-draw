@@ -11,13 +11,40 @@ const SUPPRESS_SCROLL = (e) => {
  * initiating pan and drawing actions.
  */
 export class DefaultState {
+  handleZoomIn = (e, canvasDraw) => {
+    const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
+
+    if (disabled) {
+      return new DisabledState();
+    } else if (enablePanAndZoom) {
+      canvasDraw.coordSystem.scaleAtClientPoint(mouseZoomFactor * 100);
+    }
+
+    return this;
+  };
+
+  handleZoomOut = (e, canvasDraw) => {
+    const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
+
+    if (disabled) {
+      return new DisabledState();
+    } else if (enablePanAndZoom) {
+      canvasDraw.coordSystem.scaleAtClientPoint(mouseZoomFactor * -100);
+    }
+
+    return this;
+  };
+
   handleMouseWheel = (e, canvasDraw) => {
     const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
-    if (disabled ) {
+    if (disabled) {
       return new DisabledState();
     } else if (enablePanAndZoom && e.ctrlKey) {
       e.preventDefault();
-      canvasDraw.coordSystem.scaleAtClientPoint(mouseZoomFactor * e.deltaY, clientPointFromEvent(e));
+      canvasDraw.coordSystem.scaleAtClientPoint(
+        mouseZoomFactor * e.deltaY,
+        clientPointFromEvent(e)
+      );
     }
     return this;
   };
@@ -26,9 +53,9 @@ export class DefaultState {
     if (canvasDraw.props.disabled) {
       return new DisabledState();
     } else if (e.ctrlKey && canvasDraw.props.enablePanAndZoom) {
-      return (new PanState()).handleDrawStart(e, canvasDraw);
+      return new PanState().handleDrawStart(e, canvasDraw);
     } else {
-      return (new WaitForPinchState()).handleDrawStart(e, canvasDraw);
+      return new WaitForPinchState().handleDrawStart(e, canvasDraw);
     }
   };
 
@@ -43,9 +70,9 @@ export class DefaultState {
   };
 
   handleDrawEnd = (e, canvasDraw) => {
-    return canvasDraw.props.disabled ? (new DisabledState()) : this;
+    return canvasDraw.props.disabled ? new DisabledState() : this;
   };
-};
+}
 
 /**
  * This state is used as long as the disabled prop is active. It ignores all
@@ -58,7 +85,7 @@ export class DisabledState {
     if (canvasDraw.props.disabled) {
       return this;
     } else {
-      return (new DefaultState()).handleMouseWheel(e, canvasDraw);
+      return new DefaultState().handleMouseWheel(e, canvasDraw);
     }
   };
 
@@ -66,7 +93,7 @@ export class DisabledState {
     if (canvasDraw.props.disabled) {
       return this;
     } else {
-      return (new DefaultState()).handleDrawStart(e, canvasDraw);
+      return new DefaultState().handleDrawStart(e, canvasDraw);
     }
   };
 
@@ -74,7 +101,7 @@ export class DisabledState {
     if (canvasDraw.props.disabled) {
       return this;
     } else {
-      return (new DefaultState()).handleDrawMove(e, canvasDraw);
+      return new DefaultState().handleDrawMove(e, canvasDraw);
     }
   };
 
@@ -82,9 +109,9 @@ export class DisabledState {
     if (canvasDraw.props.disabled) {
       return this;
     } else {
-      return (new DefaultState()).handleDrawEnd(e, canvasDraw);
+      return new DefaultState().handleDrawEnd(e, canvasDraw);
     }
-  }
+  };
 }
 
 /**
@@ -98,7 +125,10 @@ export class PanState {
     e.preventDefault();
 
     this.dragStart = clientPointFromEvent(e);
-    this.panStart = { x: canvasDraw.coordSystem.x, y: canvasDraw.coordSystem.y };
+    this.panStart = {
+      x: canvasDraw.coordSystem.x,
+      y: canvasDraw.coordSystem.y,
+    };
 
     return this;
   };
@@ -109,7 +139,10 @@ export class PanState {
     const { clientX, clientY } = clientPointFromEvent(e);
     const dx = clientX - this.dragStart.clientX;
     const dy = clientY - this.dragStart.clientY;
-    canvasDraw.coordSystem.setView({ x: this.panStart.x + dx, y: this.panStart.y + dy });
+    canvasDraw.coordSystem.setView({
+      x: this.panStart.x + dx,
+      y: this.panStart.y + dy,
+    });
 
     return this;
   };
@@ -126,25 +159,25 @@ export class PanState {
 export class WaitForPinchState {
   constructor() {
     this.startClientPoint = null;
-    this.startTimestamp = (new Date()).valueOf();
+    this.startTimestamp = new Date().valueOf();
     this.deferredPoints = [];
   }
 
   handleMouseWheel = SUPPRESS_SCROLL.bind(this);
 
-  handleDrawStart  = (e, canvasDraw) => {
+  handleDrawStart = (e, canvasDraw) => {
     const { enablePanAndZoom } = canvasDraw.props;
     e.preventDefault();
 
     // We're going to transition immediately into lazy-drawing mode if
     // pan-and-zoom isn't enabled or if this event wasn't triggered by a touch.
     if (!e.touches || !e.touches.length || !enablePanAndZoom) {
-      return (new DrawingState()).handleDrawStart(e, canvasDraw);
+      return new DrawingState().handleDrawStart(e, canvasDraw);
     }
 
     // If we already have two touch events, we can move straight into pinch/pan
     if (enablePanAndZoom && e.touches && e.touches.length >= 2) {
-      return (new ScaleOrPanState()).handleDrawStart(e, canvasDraw);
+      return new ScaleOrPanState().handleDrawStart(e, canvasDraw);
     }
 
     return this.handleDrawMove(e, canvasDraw);
@@ -157,7 +190,7 @@ export class WaitForPinchState {
     // whether zoom is enabled because that happend in draw start).
     if (e.touches && e.touches.length >= 2) {
       // Use the start draw to handler to transition.
-      return (new ScaleOrPanState()).handleDrawStart(e, canvasDraw);
+      return new ScaleOrPanState().handleDrawStart(e, canvasDraw);
     }
 
     const clientPt = clientPointFromEvent(e);
@@ -165,7 +198,7 @@ export class WaitForPinchState {
 
     // If we've already moved far enough, or if enough time has passed, give up
     // and switch over to drawing.
-    if ((new Date()).valueOf() - this.startTimestamp < PINCH_TIMEOUT_MS) {
+    if (new Date().valueOf() - this.startTimestamp < PINCH_TIMEOUT_MS) {
       if (this.startClientPoint === null) {
         this.startClientPoint = clientPt;
       }
@@ -173,8 +206,8 @@ export class WaitForPinchState {
       // Note that we're using "manhattan distance" rather than computing a
       // hypotenuse here as a cheap approximation
       const d =
-        Math.abs(clientPt.clientX - this.startClientPoint.clientX)
-        + Math.abs(clientPt.clientY - this.startClientPoint.clientY);
+        Math.abs(clientPt.clientX - this.startClientPoint.clientX) +
+        Math.abs(clientPt.clientY - this.startClientPoint.clientY);
 
       if (d < TOUCH_SLOP) {
         // We're not ready to give up yet.
@@ -199,7 +232,8 @@ export class WaitForPinchState {
     for (let i = 0; i < this.deferredPoints.length; i++) {
       const deferredPt = this.deferredPoints[i];
       const syntheticEvt = new SyntheticEvent(deferredPt);
-      const func = i === 0 ? nextState.handleDrawStart : nextState.handleDrawMove;
+      const func =
+        i === 0 ? nextState.handleDrawStart : nextState.handleDrawMove;
       nextState = func(syntheticEvt, canvasDraw);
     }
     return nextState;
@@ -219,7 +253,10 @@ export class ScaleOrPanState {
       return new DefaultState();
     }
     this.start = this.getTouchMetrics(e);
-    this.panStart = { x: canvasDraw.coordSystem.x, y: canvasDraw.coordSystem.y };
+    this.panStart = {
+      x: canvasDraw.coordSystem.x,
+      y: canvasDraw.coordSystem.y,
+    };
     this.scaleStart = canvasDraw.coordSystem.scale;
     return this;
   };
@@ -230,7 +267,8 @@ export class ScaleOrPanState {
       return new DefaultState();
     }
 
-    const { centroid, distance } = this.recentMetrics = this.getTouchMetrics(e);
+    const { centroid, distance } = (this.recentMetrics =
+      this.getTouchMetrics(e));
 
     // Switch to scaling?
     const dd = Math.abs(distance - this.start.distance);
@@ -286,7 +324,7 @@ export class TouchPanState {
     }
 
     const ref = this.scaleOrPanState;
-    const { centroid, distance } = ref.recentMetrics = ref.getTouchMetrics(e);
+    const { centroid, distance } = (ref.recentMetrics = ref.getTouchMetrics(e));
 
     const dx = centroid.clientX - ref.start.centroid.clientX;
     const dy = centroid.clientY - ref.start.centroid.clientY;
@@ -317,7 +355,7 @@ export class TouchScaleState {
     }
 
     const ref = this.scaleOrPanState;
-    const { centroid, distance } = ref.recentMetrics = ref.getTouchMetrics(e);
+    const { centroid, distance } = (ref.recentMetrics = ref.getTouchMetrics(e));
 
     const targetScale = ref.scaleStart * (distance / ref.start.distance);
     const dScale = targetScale - canvasDraw.coordSystem.scale;
@@ -360,18 +398,22 @@ export class DrawingState {
 
     if (!this.isDrawing || isDisabled) {
       // Start drawing and add point
-      canvasDraw.points.push(canvasDraw.clampPointToDocument(canvasDraw.lazy.brush.toObject()));
+      canvasDraw.points.push(
+        canvasDraw.clampPointToDocument(canvasDraw.lazy.brush.toObject())
+      );
       this.isDrawing = true;
     }
 
     // Add new point
-    canvasDraw.points.push(canvasDraw.clampPointToDocument(canvasDraw.lazy.brush.toObject()));
+    canvasDraw.points.push(
+      canvasDraw.clampPointToDocument(canvasDraw.lazy.brush.toObject())
+    );
 
     // Draw current points
     canvasDraw.drawPoints({
       points: canvasDraw.points,
       brushColor: canvasDraw.props.brushColor,
-      brushRadius: canvasDraw.props.brushRadius
+      brushRadius: canvasDraw.props.brushRadius,
     });
 
     return this;
@@ -392,7 +434,7 @@ export class SyntheticEvent {
   constructor({ clientX, clientY }) {
     this.clientX = clientX;
     this.clientY = clientY;
-    this.touches = [ { clientX, clientY } ];
+    this.touches = [{ clientX, clientY }];
   }
 
   preventDefault = () => {};
