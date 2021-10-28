@@ -17,7 +17,8 @@ export class DefaultState {
     if (disabled) {
       return new DisabledState();
     } else if (enablePanAndZoom) {
-      canvasDraw.coordSystem.scaleAtClientPoint(mouseZoomFactor * 100);
+      console.log(canvasDraw);
+      canvasDraw.coordSystem.setScale(canvasDraw.coordSystem._view.scale + 1);
     }
 
     return this;
@@ -29,7 +30,7 @@ export class DefaultState {
     if (disabled) {
       return new DisabledState();
     } else if (enablePanAndZoom) {
-      canvasDraw.coordSystem.scaleAtClientPoint(mouseZoomFactor * -100);
+      canvasDraw.coordSystem.setScale(canvasDraw.coordSystem._view.scale - 1);
     }
 
     return this;
