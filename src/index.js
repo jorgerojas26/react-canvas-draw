@@ -110,6 +110,7 @@ export default class CanvasDraw extends PureComponent {
 
     this.points = [];
     this.lines = [];
+    this.undoData = [];
     this.erasedLines = [];
 
     this.mouseHasMoved = true;
@@ -127,15 +128,31 @@ export default class CanvasDraw extends PureComponent {
   }
 
   undo = () => {
+    console.log(this);
     let lines = [];
     if (this.lines.length) {
       lines = this.lines.slice(0, -1);
+      this.undoData.push(this.getSaveData());
     } else if (this.erasedLines.length) {
       lines = this.erasedLines.pop();
+      this.undoData.push(this.getSaveData());
     }
+
     this.clearExceptErasedLines();
     this.simulateDrawingLines({ lines, immediate: true });
     this.triggerOnChange();
+  };
+
+  redo = () => {
+    let data = {};
+    if (this.undoData.length) {
+      data = JSON.parse(this.undoData.pop());
+    }
+    if (data.lines) {
+      this.clearExceptErasedLines();
+      this.simulateDrawingLines({ lines: data.lines, immediate: true });
+      this.triggerOnChange();
+    }
   };
 
   eraseAll = () => {
