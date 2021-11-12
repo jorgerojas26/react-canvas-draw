@@ -17,7 +17,6 @@ export class DefaultState {
     if (disabled) {
       return new DisabledState();
     } else if (enablePanAndZoom) {
-      console.log(canvasDraw);
       canvasDraw.coordSystem.setScale(canvasDraw.coordSystem._view.scale + 1);
     }
 

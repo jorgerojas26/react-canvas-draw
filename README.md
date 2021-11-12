@@ -53,6 +53,7 @@ These are the defaultProps of CanvasDraw. You can pass along any of these props 
     loadTimeOffset: 5,
     lazyRadius: 30,
     brushRadius: 12,
+    pointerRadius: 4,
     brushColor: "#444",
     catenaryColor: "#0a0302",
     gridColor: "rgba(150,150,150,0.17)",
