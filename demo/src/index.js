@@ -80,11 +80,16 @@ class Demo extends Component {
           Set the <span>enablePanAndZoom</span> prop to enable mouse scrolling
           and panning (using Ctrl), pinch zooming, and two-finger panning. If
           you want to ensure that all lines stay within the bounds of the
-          canvas, set the <span>clampLinesToDocument</span> property.
+          canvas, set the <span>clampLinesToDocument</span> property. If you
+          want to change the radius of the main pointer (the one at the cursor),
+          you can pass the pointerRadius prop.
         </p>
+
         <CanvasDraw
           enablePanAndZoom
           clampLinesToDocument
+          brushRadius={1}
+          lazyRadius={30}
           gridColor="#ccc"
           imgSrc="https://upload.wikimedia.org/wikipedia/commons/a/a1/Nepalese_Mhapuja_Mandala.jpg"
         />

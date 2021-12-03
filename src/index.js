@@ -57,11 +57,13 @@ export default class CanvasDraw extends PureComponent {
     loadTimeOffset: PropTypes.number,
     lazyRadius: PropTypes.number,
     brushRadius: PropTypes.number,
+    pointerRadius: PropTypes.number,
     brushColor: PropTypes.string,
     catenaryColor: PropTypes.string,
     gridColor: PropTypes.string,
     backgroundColor: PropTypes.string,
     hideGrid: PropTypes.bool,
+    hideCatenary: PropTypes.bool,
     canvasWidth: dimensionsPropTypes,
     canvasHeight: dimensionsPropTypes,
     disabled: PropTypes.bool,
@@ -82,11 +84,13 @@ export default class CanvasDraw extends PureComponent {
     loadTimeOffset: 5,
     lazyRadius: 12,
     brushRadius: 10,
+    pointerRadius: 4,
     brushColor: "#444",
     catenaryColor: "#0a0302",
     gridColor: "rgba(150,150,150,0.17)",
     backgroundColor: "#FFF",
     hideGrid: false,
+    hideCatenary: false,
     canvasWidth: 400,
     canvasHeight: 400,
     disabled: false,
@@ -133,7 +137,6 @@ export default class CanvasDraw extends PureComponent {
   }
 
   undo = () => {
-    console.log(this);
     let lines = [];
     if (this.lines.length) {
       lines = this.lines.slice(0, -1);
@@ -238,11 +241,13 @@ export default class CanvasDraw extends PureComponent {
     this.lazy = new LazyBrush({
       radius: this.props.lazyRadius * window.devicePixelRatio,
       enabled: true,
+      angle: 50,
       initialPoint: {
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
       },
     });
+
     this.chainLength = this.props.lazyRadius * window.devicePixelRatio;
 
     this.canvasObserver = new ResizeObserver((entries, observer) =>
@@ -264,6 +269,7 @@ export default class CanvasDraw extends PureComponent {
         { x: initX + this.chainLength / 4, y: initY },
         { both: false }
       );
+
       this.mouseHasMoved = true;
       this.valuesChanged = true;
       this.clearExceptErasedLines();
@@ -683,38 +689,40 @@ export default class CanvasDraw extends PureComponent {
 
     this.clearWindow(ctx);
 
-    // Draw brush preview
-    ctx.beginPath();
-    ctx.fillStyle = this.props.brushColor;
-    ctx.arc(brush.x, brush.y, this.props.brushRadius, 0, Math.PI * 2, true);
-    ctx.fill();
-
     // Draw mouse point (the one directly at the cursor)
     ctx.beginPath();
     ctx.fillStyle = this.props.catenaryColor;
-    ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2, true);
+    ctx.arc(pointer.x, pointer.y, this.props.pointerRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw catenary
-    if (this.lazy.isEnabled()) {
+    if (!this.props.hideCatenary) {
+      // Draw brush preview
       ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      ctx.setLineDash([2, 4]);
-      ctx.strokeStyle = this.props.catenaryColor;
-      this.catenary.drawToCanvas(
-        this.ctx.interface,
-        brush,
-        pointer,
-        this.chainLength
-      );
-      ctx.stroke();
-    }
+      ctx.fillStyle = this.props.brushColor;
+      ctx.arc(brush.x, brush.y, this.props.brushRadius, 0, Math.PI * 2, true);
+      ctx.fill();
 
-    // Draw brush point (the one in the middle of the brush preview)
-    ctx.beginPath();
-    ctx.fillStyle = this.props.catenaryColor;
-    ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true);
-    ctx.fill();
+      // Draw catenary
+      if (this.lazy.isEnabled()) {
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.setLineDash([2, 4]);
+        ctx.strokeStyle = this.props.catenaryColor;
+        this.catenary.drawToCanvas(
+          this.ctx.interface,
+          brush,
+          pointer,
+          this.chainLength
+        );
+        ctx.stroke();
+      }
+
+      // Draw brush point (the one in the middle of the brush preview)
+      ctx.beginPath();
+      ctx.fillStyle = this.props.catenaryColor;
+      ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true);
+      ctx.fill();
+    }
   };
 }
