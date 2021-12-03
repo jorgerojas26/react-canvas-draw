@@ -1,10 +1,20 @@
-/** 
+/**
  * Original from: https://stackoverflow.com/questions/21961839/simulation-background-size-cover-in-canvas
  * Original By Ken Fyrstenberg Nilsen
- * 
+ *
  * Note: img must be fully loaded or have correct width & height set.
  */
-export default function drawImageProp({ctx, img, x, y, w, h, offsetX, offsetY} = {}) {
+export default function drawImageProp({
+  ctx,
+  img,
+  x,
+  y,
+  w,
+  h,
+  offsetX,
+  offsetY,
+  globalAlpha,
+} = {}) {
   // Defaults
   if (typeof x !== "number") x = 0;
   if (typeof y !== "number") y = 0;
@@ -49,6 +59,8 @@ export default function drawImageProp({ctx, img, x, y, w, h, offsetX, offsetY} =
   if (cw > iw) cw = iw;
   if (ch > ih) ch = ih;
 
-  // fill image in dest. rectangle
-  ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
+  const imageRatio = img.width / img.height;
+
+  ctx.globalAlpha = globalAlpha;
+  ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
 }
