@@ -67,7 +67,7 @@ export default class CanvasDraw extends PureComponent {
     canvasWidth: dimensionsPropTypes,
     canvasHeight: dimensionsPropTypes,
     disabled: PropTypes.bool,
-    imgSrc: PropTypes.string,
+    imgSrc: PropTypes.array,
     saveData: PropTypes.string,
     immediateLoading: PropTypes.bool,
     hideInterface: PropTypes.bool,
@@ -94,7 +94,7 @@ export default class CanvasDraw extends PureComponent {
     canvasWidth: 400,
     canvasHeight: 400,
     disabled: false,
-    imgSrc: "",
+    imgSrc: [],
     saveData: "",
     immediateLoading: false,
     hideInterface: false,
@@ -460,7 +460,7 @@ export default class CanvasDraw extends PureComponent {
       this.image.forEach((image) => {
         image.img.complete &&
           drawImage({
-            ctx: _this.ctx.grid,
+            ctx: this.ctx.grid,
             img: image.img,
             globalAlpha: image.globalAlpha,
           });
