@@ -12,11 +12,11 @@ const SUPPRESS_SCROLL = (e) => {
  */
 export class DefaultState {
   handleZoomIn = (e, canvasDraw) => {
-    const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
+    const { disabled, enableZoom, mouseZoomFactor } = canvasDraw.props;
 
     if (disabled) {
       return new DisabledState();
-    } else if (enablePanAndZoom) {
+    } else if (enableZoom) {
       canvasDraw.coordSystem.setScale(canvasDraw.coordSystem._view.scale + 1);
     }
 
@@ -24,11 +24,11 @@ export class DefaultState {
   };
 
   handleZoomOut = (e, canvasDraw) => {
-    const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
+    const { disabled, enableZoom, mouseZoomFactor } = canvasDraw.props;
 
     if (disabled) {
       return new DisabledState();
-    } else if (enablePanAndZoom) {
+    } else if (enableZoom) {
       canvasDraw.coordSystem.setScale(canvasDraw.coordSystem._view.scale - 1);
     }
 
@@ -36,10 +36,10 @@ export class DefaultState {
   };
 
   handleMouseWheel = (e, canvasDraw) => {
-    const { disabled, enablePanAndZoom, mouseZoomFactor } = canvasDraw.props;
+    const { disabled, enableZoom, mouseZoomFactor } = canvasDraw.props;
     if (disabled) {
       return new DisabledState();
-    } else if (enablePanAndZoom && e.ctrlKey) {
+    } else if (enableZoom && e.ctrlKey) {
       e.preventDefault();
       canvasDraw.coordSystem.scaleAtClientPoint(
         mouseZoomFactor * e.deltaY,
@@ -52,7 +52,10 @@ export class DefaultState {
   handleDrawStart = (e, canvasDraw) => {
     if (canvasDraw.props.disabled) {
       return new DisabledState();
-    } else if (e.ctrlKey && canvasDraw.props.enablePanAndZoom) {
+    } else if (
+      (e.ctrlKey && canvasDraw.props.enablePan) ||
+      canvasDraw.props.forcePanState
+    ) {
       return new PanState().handleDrawStart(e, canvasDraw);
     } else {
       return new WaitForPinchState().handleDrawStart(e, canvasDraw);
@@ -166,17 +169,17 @@ export class WaitForPinchState {
   handleMouseWheel = SUPPRESS_SCROLL.bind(this);
 
   handleDrawStart = (e, canvasDraw) => {
-    const { enablePanAndZoom } = canvasDraw.props;
+    const { enablePan } = canvasDraw.props;
     e.preventDefault();
 
     // We're going to transition immediately into lazy-drawing mode if
     // pan-and-zoom isn't enabled or if this event wasn't triggered by a touch.
-    if (!e.touches || !e.touches.length || !enablePanAndZoom) {
+    if (!e.touches || !e.touches.length || !enablePan) {
       return new DrawingState().handleDrawStart(e, canvasDraw);
     }
 
     // If we already have two touch events, we can move straight into pinch/pan
-    if (enablePanAndZoom && e.touches && e.touches.length >= 2) {
+    if (enablePan && e.touches && e.touches.length >= 2) {
       return new ScaleOrPanState().handleDrawStart(e, canvasDraw);
     }
 

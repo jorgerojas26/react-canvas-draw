@@ -67,14 +67,16 @@ export default class CanvasDraw extends PureComponent {
     canvasWidth: dimensionsPropTypes,
     canvasHeight: dimensionsPropTypes,
     disabled: PropTypes.bool,
-    imgSrc: PropTypes.string,
+    imgSrc: PropTypes.array,
     saveData: PropTypes.string,
     immediateLoading: PropTypes.bool,
     hideInterface: PropTypes.bool,
-    enablePanAndZoom: PropTypes.bool,
+    enableZoom: PropTypes.bool,
+    enablePan: PropTypes.bool,
     mouseZoomFactor: PropTypes.number,
     zoomExtents: boundsProp,
     clampLinesToDocument: PropTypes.bool,
+    forcePanState: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -92,14 +94,16 @@ export default class CanvasDraw extends PureComponent {
     canvasWidth: 400,
     canvasHeight: 400,
     disabled: false,
-    imgSrc: "",
+    imgSrc: [],
     saveData: "",
     immediateLoading: false,
     hideInterface: false,
-    enablePanAndZoom: false,
+    enableZoom: false,
+    enablePan: false,
     mouseZoomFactor: 0.01,
     zoomExtents: { min: 0.33, max: 3 },
     clampLinesToDocument: false,
+    forcePanState: false,
   };
 
   ///// public API /////////////////////////////////////////////////////////////
@@ -116,6 +120,7 @@ export default class CanvasDraw extends PureComponent {
     this.lines = [];
     this.undoData = [];
     this.erasedLines = [];
+    this.image = [];
 
     this.mouseHasMoved = true;
     this.valuesChanged = true;
@@ -303,7 +308,7 @@ export default class CanvasDraw extends PureComponent {
     }
 
     this.coordSystem.scaleExtents = this.props.zoomExtents;
-    if (!this.props.enablePanAndZoom) {
+    if (!this.props.enableZoom) {
       this.coordSystem.resetView();
     }
   }
@@ -451,9 +456,15 @@ export default class CanvasDraw extends PureComponent {
   };
 
   redrawImage = () => {
-    this.image &&
-      this.image.complete &&
-      drawImage({ ctx: this.ctx.grid, img: this.image });
+    this.image.length &&
+      this.image.forEach((image) => {
+        image.img.complete &&
+          drawImage({
+            ctx: this.ctx.grid,
+            img: image.img,
+            globalAlpha: image.globalAlpha,
+          });
+      });
   };
 
   simulateDrawingLines = ({ lines, immediate }) => {
@@ -624,17 +635,18 @@ export default class CanvasDraw extends PureComponent {
   ///// Canvas Rendering
 
   drawImage = () => {
-    if (!this.props.imgSrc) return;
+    this.image = [];
+    if (!this.props.imgSrc) return; // Load the image
 
-    // Load the image
-    this.image = new Image();
+    [].concat(this.props.imgSrc).forEach((img) => {
+      const newImage = new Image(); // Prevent SecurityError "Tainted canvases may not be exported." #70
 
-    // Prevent SecurityError "Tainted canvases may not be exported." #70
-    this.image.crossOrigin = "anonymous";
+      newImage.crossOrigin = "anonymous"; // Draw the image once loaded
 
-    // Draw the image once loaded
-    this.image.onload = this.redrawImage;
-    this.image.src = this.props.imgSrc;
+      newImage.onload = this.redrawImage;
+      newImage.src = img.src;
+      this.image.push({ img: newImage, globalAlpha: img.globalAlpha });
+    });
   };
 
   drawGrid = (ctx) => {
