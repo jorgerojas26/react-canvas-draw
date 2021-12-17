@@ -22,13 +22,13 @@ with pan and zoom support. Thank you for this awesome package.
 Install via NPM:
 
 ```
-npm install react-canvas-draw --save
+npm install react-canvas-draw-pan-zoom --save
 ```
 
 or YARN:
 
 ```
-yarn add react-canvas-draw
+yarn add react-canvas-draw-pan-zoom
 ```
 
 ## Usage
