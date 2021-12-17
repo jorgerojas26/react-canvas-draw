@@ -58,14 +58,20 @@ These are the defaultProps of CanvasDraw. You can pass along any of these props 
     catenaryColor: "#0a0302",
     gridColor: "rgba(150,150,150,0.17)",
     hideGrid: false,
+    hideCatenary: false,
     canvasWidth: 400,
     canvasHeight: 400,
     disabled: false,
-    imgSrc: "",
+    imgSrc: [{
+      img: '',
+      globalAlpha: ''
+    }],
     saveData: null,
     immediateLoading: false,
     hideInterface: false,
-    enablePanAndZoom: false,
+    enablePan: false,
+    enableZoom: false,
+    forcePanState: false,
     mouseZoomFactor: 0.01,
     zoomExtents: { min: 0.33, max: 3 },
   };
@@ -79,8 +85,11 @@ Useful functions that you can call, e.g. when having a reference to this compone
 - `loadSaveData(saveData: String, immediate: Boolean)` loads a previously saved drawing using the saveData string, as well as an optional boolean flag to load it immediately, instead of live-drawing it.
 - `clear()` clears the canvas completely, including previously erased lines, and resets the view. After a clear, `undo()` will have no effect.
 - `eraseAll()` clears the drawn lines but retains their data; calling `undo()` can restore the erased lines. *Note: erased lines are not included in the save data.*
-- `resetView()` resets the canvas' view to defaults. Has no effect if the `enablePanAndZoom` property is `false`.
+- `resetView()` resets the canvas' view to defaults. Has no effect if the `enableZoom` property is `false`.
 - `undo()` removes the latest change to the drawing. This includes everything drawn since the last MouseDown event.
+- `redo()` redo the latest removed change to the drawing. This includes everything drawn since the last MouseDown event.
+- `zoomIn()` zoomIn by +1 scale
+- `zoomOut()` zoomOut by -1 scale
 
 ## Local Development
 
